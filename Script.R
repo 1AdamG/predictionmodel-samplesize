@@ -1,13 +1,14 @@
-library('dbConnect')
+library(dbConnect)
+library(DBI)
 library(doParallel)
 library(foreach)
+library(dplyr)
 #Initialize
 setwd("/home/adam/Desktop/source/repos/predictionmodel-samplesize")
 source(".sshconfig.R")
 source("R/MySQLFunctions.R")
 source("R/CreateSubSample.R")
 source("R/CompareModels.R")
-
 ## Settings
 
 ## Note that it is the number of events in datasetB that should vary between 1
@@ -98,6 +99,7 @@ loopCount <- 0
 #Start loop number of updating events (1-1000) changes with each loop
 updatingevents <- c(1:1000)
 repeattimesforconfidence <- 1 #should be 1000 times
+
 r <-foreach(s=rep(updatingevents,repeattimesforconfidence), .combine=c) %dopar% {
   loopCount = loopCount + 1
   RunStudy(s,loopCount)

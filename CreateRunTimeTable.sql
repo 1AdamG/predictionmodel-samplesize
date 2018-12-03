@@ -1,4 +1,3 @@
-select * from runtime_data order by id asc LIMIT 1
 #truncate table runtime_data
 #2018-11-21 13:03:13     1
 CREATE TABLE `runtime_data` (
