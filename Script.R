@@ -78,9 +78,10 @@ RunStudy <- function(numberofupdatingevents,loopCount) {
         sample.dataset.C$UMp <- 1/(1 + exp(-sample.dataset.C$UMlp))
 
         #compare results from both models
-        #cm <- CompareModels(sample.dataset.C$UMp, sample.dataset.C$Up)
+        cm <- with(sample.dataset.C, CompareModels(UMp, Mp, Event))
 
-        StoreLoopData(executionID, loopCount, developmentprevalence, updatingvalidationprevalence, numberofdevelopmentnonevents, numberofvalidationnonevents, numberofupdatingnonevents, modelMIntercept, modelMSBP, modelMPULSE, modelMRR, modelMGCSTOT, modelUMIntercept, 0)
+        ## StoreLoopData(executionID, loopCount, developmentprevalence, updatingvalidationprevalence, numberofdevelopmentnonevents, numberofvalidationnonevents, numberofupdatingnonevents, modelMIntercept, modelMSBP, modelMPULSE, modelMRR, modelMGCSTOT, modelUMIntercept, 0)
+        StoreLoopData(executionID, loopCount, developmentprevalence, updatingvalidationprevalence, numberofdevelopmentnonevents, numberofvalidationnonevents, numberofupdatingevents, numberofupdatingnonevents, cm)
         print(loopCount)
     }
   return(1)
