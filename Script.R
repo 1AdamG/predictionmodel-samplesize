@@ -44,18 +44,19 @@ RunStudy <- function(numberofupdatingevents,loopCount) {
         numberofvalidationnonevents <- ceiling((numberofevents / updatingvalidationprevalence) - numberofevents)
         numberofupdatingnonevents <- ceiling((numberofupdatingevents / updatingvalidationprevalence) - numberofupdatingevents)
 
-        #Get developing data (datasetA), get events and non-events, choose sample size and join together
+        ## Get developing data (datasetA), get events and non-events, choose sample size and join together
         sample.dataset.A <- CreateSubSample(datasetA, numberofevents, numberofdevelopmentnonevents)
-        #create model
+
+        ## Ceate model
         modelM <- glm(Event ~ SBP + PULSE + RR + GCSTOT, data = sample.dataset.A, family = 'binomial')
 
-        #get validation data (DatasetC) and pick sample 
+        ## Get updating data (Dataset B), select sample
+        sample.dataset.B <- CreateSubSample(datasetB, numberofupdatingevents, numberofupdatingnonevents)
+        
+        ## Get validation data (DatasetC) and select sample 
         sample.dataset.C <- CreateSubSample(datasetC, numberofevents, numberofvalidationnonevents)
 
-        #Get updating data (Dataset B), pick samples
-        sample.dataset.B <- CreateSubSample(datasetB, numberofupdatingevents, numberofupdatingnonevents)
-
-        # Update model
+        ## Update model
         sample.dataset.B$p <- predict(modelM, newdata = sample.dataset.B)
         modelUM <- glm(Event ~ p, data = sample.dataset.B)
 
@@ -68,18 +69,20 @@ RunStudy <- function(numberofupdatingevents,loopCount) {
         modelUMIntercept <- coef(modelUM)["(Intercept)"]
         modelUMP <- coef(modelUM)["p"]
 
-        # Use both M and UM to predict in validation sample
+        ## Use both M and UM to predict in validation sample
         sample.dataset.C$Mlp <- with(sample.dataset.C, modelMIntercept + modelMSBP * SBP + modelMPULSE * PULSE + modelMRR * RR + modelMGCSTOT * GCSTOT)
-        # Convert to probability
+
+        ## Convert to probability
         sample.dataset.C$Mp <- 1/(1 + exp(-sample.dataset.C$Mlp))
         
-        # Repeat with UM
+        ## Repeat with UM
         sample.dataset.C$UMlp <- with(sample.dataset.C, modelMIntercept + modelUMIntercept + modelUMP * (modelMSBP * SBP + modelMPULSE * PULSE + modelMRR * RR + modelMGCSTOT * GCSTOT))
         sample.dataset.C$UMp <- 1/(1 + exp(-sample.dataset.C$UMlp))
 
-        #compare results from both models
+        ## Compare results from both models
         cm <- with(sample.dataset.C, CompareModels(UMp, Mp, Event))
 
+        ## Store data
         ## StoreLoopData(executionID, loopCount, developmentprevalence, updatingvalidationprevalence, numberofdevelopmentnonevents, numberofvalidationnonevents, numberofupdatingnonevents, modelMIntercept, modelMSBP, modelMPULSE, modelMRR, modelMGCSTOT, modelUMIntercept, 0)
         StoreLoopData(executionID, loopCount, developmentprevalence, updatingvalidationprevalence, numberofdevelopmentnonevents, numberofvalidationnonevents, numberofupdatingevents, numberofupdatingnonevents, cm)
         print(loopCount)
