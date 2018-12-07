@@ -29,7 +29,8 @@ datasetC <- ImportMangroveMySQL(mysql.server.name, mysql.server.port, mysql.data
 
 executionID <- format(Sys.time(), "%Y%m%d%H%M%OS")
 allprevalences <- data.frame(t(expand.grid(prevalenceinterval, prevalenceinterval)))
-RunStudy <- function(numberofupdatingevents,loopCount) {
+RunStudy <- function(numberofupdatingevents,repetitionCount) {
+#numberofupdatingevents<-200; repetitionCount <- 1
     gc()
 
     #Start loop confindence (0.02, 0.05, 0.10) changes with each loop. Note that the
@@ -83,9 +84,7 @@ RunStudy <- function(numberofupdatingevents,loopCount) {
         cm <- with(sample.dataset.C, CompareModels(UMp, Mp, Event))
 
         ## Store data
-        ## StoreLoopData(executionID, loopCount, developmentprevalence, updatingvalidationprevalence, numberofdevelopmentnonevents, numberofvalidationnonevents, numberofupdatingnonevents, modelMIntercept, modelMSBP, modelMPULSE, modelMRR, modelMGCSTOT, modelUMIntercept, 0)
-        StoreLoopData(executionID, loopCount, developmentprevalence, updatingvalidationprevalence, numberofdevelopmentnonevents, numberofvalidationnonevents, numberofupdatingevents, numberofupdatingnonevents, cm)
-        print(loopCount)
+        StoreLoopData(executionID, repetitionCount, numberofupdatingevents, numberofupdatingnonevents, developmentprevalence, updatingvalidationprevalence, numberofdevelopmentnonevents, numberofvalidationnonevents, cm)
     }
   return(1)
 }
@@ -98,19 +97,18 @@ registerDoParallel(myCluster)
 init <- Sys.time()
 
 print("Loop starting")
-loopCount <- 0
 
 #Start loop number of updating events (1-1000) changes with each loop
 updatingevents <- c(1:1000)
-repeattimesforconfidence <- 1 #should be 1000 times
+repeattimesforconfidence <- 1:1 #should be 1000 times
 
-r <-foreach(s=rep(updatingevents,repeattimesforconfidence), .combine=c) %dopar% {
-  loopCount = loopCount + 1
-  RunStudy(s,loopCount)
+foreach(rtfc = repeattimesforconfidence, .combine = c) %do% {
+  foreach(noue = updatingevents, .combine = c) %dopar% {
+    RunStudy(noue,rtfc)
+  }
 }
 
-a <- Sys.time() - init
-print(a)
+print(Sys.time() - init)
 stopCluster(myCluster)
 print("Finished using multiple cores")
 
