@@ -58,8 +58,8 @@ RunStudy <- function(numberofupdatingevents,repetitionCount) {
         sample.dataset.C <- CreateSubSample(datasetC, numberofevents, numberofvalidationnonevents)
 
         ## Update model
-        sample.dataset.B$p <- predict(modelM, newdata = sample.dataset.B)
-        modelUM <- glm(Event ~ p, data = sample.dataset.B)
+        sample.dataset.B$lp <- predict(modelM, newdata = sample.dataset.B)
+        modelUM <- glm(Event ~ lp, data = sample.dataset.B, family = binomial)
 
         modelMIntercept <- coef(modelM)["(Intercept)"]
         modelMSBP <- coef(modelM)["SBP"]
@@ -68,7 +68,7 @@ RunStudy <- function(numberofupdatingevents,repetitionCount) {
         modelMGCSTOT <- coef(modelM)["GCSTOT"]
 
         modelUMIntercept <- coef(modelUM)["(Intercept)"]
-        modelUMP <- coef(modelUM)["p"]
+        modelUMLP <- coef(modelUM)["lp"]
 
         ## Use both M and UM to predict in validation sample
         sample.dataset.C$Mlp <- with(sample.dataset.C, modelMIntercept + modelMSBP * SBP + modelMPULSE * PULSE + modelMRR * RR + modelMGCSTOT * GCSTOT)
@@ -77,14 +77,15 @@ RunStudy <- function(numberofupdatingevents,repetitionCount) {
         sample.dataset.C$Mp <- 1/(1 + exp(-sample.dataset.C$Mlp))
         
         ## Repeat with UM
-        sample.dataset.C$UMlp <- with(sample.dataset.C, modelMIntercept + modelUMIntercept + modelUMP * (modelMSBP * SBP + modelMPULSE * PULSE + modelMRR * RR + modelMGCSTOT * GCSTOT))
+        sample.dataset.C$UMlp <- with(sample.dataset.C, modelUMIntercept +
+                                                        modelUMLP * (modelMIntercept + modelMSBP * SBP + modelMPULSE * PULSE + modelMRR * RR + modelMGCSTOT * GCSTOT))
         sample.dataset.C$UMp <- 1/(1 + exp(-sample.dataset.C$UMlp))
 
         ## Compare results from both models
         cm <- with(sample.dataset.C, CompareModels(UMp, Mp, Event))
 
         ## Store data
-        StoreLoopData(executionID, repetitionCount, numberofupdatingevents, numberofupdatingnonevents, developmentprevalence, updatingvalidationprevalence, numberofdevelopmentnonevents, numberofvalidationnonevents, cm)
+        StoreLoopData(executionID, repetitionCount, numberofupdatingevents, numberofupdatingnonevents, developmentprevalence, updatingvalidationprevalence, numberofdevelopmentnonevents, numberofvalidationnonevents, cm$bias.diff, cm$calibration.slope.UM, cm$calibration.slope.M)
     }
   return(1)
 }
