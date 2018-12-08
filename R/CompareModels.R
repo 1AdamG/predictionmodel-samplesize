@@ -38,5 +38,9 @@ CompareModels <- function(UMp, Mp, outcomes) {
     ## Calculate difference in bias estimates. A negative value indicates that
     ## the updated model is better than the crude model.
     bias.diff <- with(bias.estimates, UMp - Mp)
-    return(bias.diff)
+    ## Create return list
+    return.list <- list(bias.diff = bias.diff,
+                        calibration.slope.UM = calibration.slopes$UMp,
+                        calibration.slope.M = calibration.slopes$Mp)
+    return(return.list)
 }
