@@ -83,9 +83,9 @@ RunStudy <- function(numberofupdatingevents,repetitionCount) {
 
         ## Compare results from both models
         cm <- with(sample.dataset.C, CompareModels(UMp, Mp, Event))
-
+        
         ## Store data
-        StoreLoopData(executionID, repetitionCount, numberofupdatingevents, numberofupdatingnonevents, developmentprevalence, updatingvalidationprevalence, numberofdevelopmentnonevents, numberofvalidationnonevents, cm$bias.diff, cm$calibration.slope.UM, cm$calibration.slope.M)
+        StoreLoopData(executionID, repetitionCount, numberofupdatingevents, developmentprevalence, updatingvalidationprevalence, cm$bias.diff, cm$calibration.slope.UM, cm$calibration.slope.M)
     }
   return(1)
 }

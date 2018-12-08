@@ -15,15 +15,12 @@ StoreLoopData <- function(executionID,
                           numberofupdatingevents,
                           developmentprevalence,
                           updatingvalidationprevalence,
-                          numberofupdatingnonevents,
-                          numberofdevelopmentnonevents,
-                          numberofvalidationnonevents,
                           comparisonResult,
                           calibrationSlopeUM,
                           calibrationSlopeM) {
     mydb <- dbConnect(MySQL(), user = mysql.username, password = mysql.password, dbname = mysql.database, host = mysql.server.name, port = mysql.server.port)
-    dbSendQuery(mydb, sprintf("INSERT INTO `NTDB_adam`.`runtime_data` (`executionID`,`repetitionCount`, `numberofupdatingevents`, `developmentprevalence`,`updatingvalidationprevalence`, `numberofupdatingnonevents`, `numberofdevelopmentnonevents`,`numberofvalidationnonevents`,`comparisonResult`,`calibrationSlopeUM`,`calibrationSlopeM`) VALUES (%s,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g);", 
-      executionID, repetitionCount, numberofupdatingevents, developmentprevalence, updatingvalidationprevalence, numberofupdatingnonevents, numberofdevelopmentnonevents, numberofvalidationnonevents, comparisonResult, calibrationSlopeUM, calibrationSlopeM))
+    dbSendQuery(mydb, sprintf("INSERT INTO `NTDB_adam`.`runtime_data` (`executionID`,`repetitionCount`, `numberofupdatingevents`, `developmentprevalence`,`updatingvalidationprevalence`, `comparisonResult`,`calibrationSlopeUM`,`calibrationSlopeM`) VALUES (%s,%g,%g,%g,%g,%g,%g,%g);", 
+      executionID, repetitionCount, numberofupdatingevents, developmentprevalence, updatingvalidationprevalence, comparisonResult, calibrationSlopeUM, calibrationSlopeM))
     dbDisconnect(mydb)
     return(1)
 }

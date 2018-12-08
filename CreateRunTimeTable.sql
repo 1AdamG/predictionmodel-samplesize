@@ -11,6 +11,8 @@ CREATE TABLE `runtime_data` (
   `numberofdevelopmentnonevents` int(11) DEFAULT NULL,
   `numberofvalidationnonevents` int(11) DEFAULT NULL,
   `comparisonResult` float DEFAULT NULL,
+  `calibrationSlopeUM` float DEFAULT NULL,
+  `calibrationSlopeM` float DEFAULT NULL,
   `regdate` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=923737 DEFAULT CHARSET=utf8mb4;
