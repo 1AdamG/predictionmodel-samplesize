@@ -17,10 +17,15 @@ StoreLoopData <- function(executionID,
                           updatingvalidationprevalence,
                           comparisonResult,
                           calibrationSlopeUM,
-                          calibrationSlopeM) {
-    mydb <- dbConnect(MySQL(), user = mysql.username, password = mysql.password, dbname = mysql.database, host = mysql.server.name, port = mysql.server.port)
-    dbSendQuery(mydb, sprintf("INSERT INTO `NTDB_adam`.`runtime_data` (`executionID`,`repetitionCount`, `numberofupdatingevents`, `developmentprevalence`,`updatingvalidationprevalence`, `comparisonResult`,`calibrationSlopeUM`,`calibrationSlopeM`) VALUES (%s,%g,%g,%g,%g,%g,%g,%g);", 
-      executionID, repetitionCount, numberofupdatingevents, developmentprevalence, updatingvalidationprevalence, comparisonResult, calibrationSlopeUM, calibrationSlopeM))
-    dbDisconnect(mydb)
+                          calibrationSlopeM,
+                          test = FALSE) {
+    if (!test) {
+        mydb <- dbConnect(MySQL(), user = mysql.username, password = mysql.password, dbname = mysql.database, host = mysql.server.name, port = mysql.server.port)
+        dbSendQuery(mydb, sprintf("INSERT INTO `NTDB_adam`.`runtime_data` (`executionID`,`repetitionCount`, `numberofupdatingevents`, `developmentprevalence`,`updatingvalidationprevalence`, `comparisonResult`,`calibrationSlopeUM`,`calibrationSlopeM`) VALUES (%s,%g,%g,%g,%g,%g,%g,%g);", 
+                                  executionID, repetitionCount, numberofupdatingevents, developmentprevalence, updatingvalidationprevalence, comparisonResult, calibrationSlopeUM, calibrationSlopeM))
+        dbDisconnect(mydb)
+    } else {
+        write(paste0(c(executionID, repetitionCount, numberofupdatingevents, developmentprevalence, updatingvalidationprevalence, comparisonResult, calibrationSlopeUM, calibrationSlopeM), collapse = ","), "test.csv", append = TRUE)
+    }
     return(1)
 }
