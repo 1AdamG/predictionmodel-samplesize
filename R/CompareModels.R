@@ -8,7 +8,7 @@ CompareModels <- function(UMp, Mp, outcomes) {
         ## p is a vector of probabilities. outcomes is a vector of outcomes.
 
         ## Divide each vector of probabilities into ten quantiles
-        qs <- quantile(p, probs = seq(0, 1, 0.1))
+        qs <- unique(quantile(p, probs = seq(0, 1, 0.1)))
         groups <- cut(p, qs, include.lowest = TRUE)
         ## Calculate mean probability and mean outcome in each group
         means <- lapply(levels(as.factor(groups)), function(level) {

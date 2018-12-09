@@ -3,8 +3,9 @@ library(DBI)
 library(doParallel)
 library(foreach)
 library(dplyr)
-#Initialize
-setwd("/home/adam/Desktop/source/repos/predictionmodel-samplesize")
+## Initialize
+set.seed(41738)
+## setwd("/home/adam/Desktop/source/repos/predictionmodel-samplesize")
 source(".sshconfig.R")
 source("R/MySQLFunctions.R")
 source("R/CreateSubSample.R")
@@ -61,31 +62,49 @@ RunStudy <- function(numberofupdatingevents,repetitionCount) {
         sample.dataset.B$lp <- predict(modelM, newdata = sample.dataset.B)
         modelUM <- glm(Event ~ lp, data = sample.dataset.B, family = binomial)
 
-        modelMIntercept <- coef(modelM)["(Intercept)"]
-        modelMSBP <- coef(modelM)["SBP"]
-        modelMPULSE <- coef(modelM)["PULSE"]
-        modelMRR <- coef(modelM)["RR"]
-        modelMGCSTOT <- coef(modelM)["GCSTOT"]
+        ## Set return values to 999. These values will only be returned if the
+        ## updating procedure does not converge (likely with few events)
+        comparisonResult <- 999
+        calibrationSlopeUM <- 999
+        calibrationSlopeM <- 999
+        ## Check if the updating procedure converged
+        if (modelUM$converged) {
 
-        modelUMIntercept <- coef(modelUM)["(Intercept)"]
-        modelUMLP <- coef(modelUM)["lp"]
+            ## Get crude model parameters
+            modelMIntercept <- coef(modelM)["(Intercept)"]
+            modelMSBP <- coef(modelM)["SBP"]
+            modelMPULSE <- coef(modelM)["PULSE"]
+            modelMRR <- coef(modelM)["RR"]
+            modelMGCSTOT <- coef(modelM)["GCSTOT"]
 
-        ## Use both M and UM to predict in validation sample
-        sample.dataset.C$Mlp <- with(sample.dataset.C, modelMIntercept + modelMSBP * SBP + modelMPULSE * PULSE + modelMRR * RR + modelMGCSTOT * GCSTOT)
+            ## Get updated model parameters
+            modelUMIntercept <- coef(modelUM)["(Intercept)"]
+            modelUMLP <- coef(modelUM)["lp"]
 
-        ## Convert to probability
-        sample.dataset.C$Mp <- 1/(1 + exp(-sample.dataset.C$Mlp))
-        
-        ## Repeat with UM
-        sample.dataset.C$UMlp <- with(sample.dataset.C, modelUMIntercept +
-                                                        modelUMLP * (modelMIntercept + modelMSBP * SBP + modelMPULSE * PULSE + modelMRR * RR + modelMGCSTOT * GCSTOT))
-        sample.dataset.C$UMp <- 1/(1 + exp(-sample.dataset.C$UMlp))
+            ## Use both M and UM to predict in validation sample, starting with
+            ## M
+            sample.dataset.C$Mlp <- with(sample.dataset.C, modelMIntercept + modelMSBP * SBP + modelMPULSE * PULSE + modelMRR * RR + modelMGCSTOT * GCSTOT)
 
-        ## Compare results from both models
-        cm <- with(sample.dataset.C, CompareModels(UMp, Mp, Event))
+            ## Convert M's linear predictor to probability
+            sample.dataset.C$Mp <- 1/(1 + exp(-sample.dataset.C$Mlp))
+            
+            ## Repeat with UM
+            sample.dataset.C$UMlp <- with(sample.dataset.C, modelUMIntercept +
+                                                            modelUMLP * (modelMIntercept + modelMSBP * SBP + modelMPULSE * PULSE + modelMRR * RR + modelMGCSTOT * GCSTOT))
+            sample.dataset.C$UMp <- 1/(1 + exp(-sample.dataset.C$UMlp))
+
+            ## Compare results from both models
+            cm <- with(sample.dataset.C, CompareModels(UMp, Mp, Event))
+
+            ## Get results
+            comparisonResult <- cm$bias.diff
+            calibrationSlopeUM <- cm$calibration.slope.UM
+            calibrationSlopeM <- cm$calibration.slope.M
+        }
         
         ## Store data
-        StoreLoopData(executionID, repetitionCount, numberofupdatingevents, developmentprevalence, updatingvalidationprevalence, cm$bias.diff, cm$calibration.slope.UM, cm$calibration.slope.M)
+        StoreLoopData(executionID, repetitionCount, numberofupdatingevents, developmentprevalence, updatingvalidationprevalence, comparisonResult, calibrationSlopeUM, calibrationSlopeM,
+                      test = FALSE)
     }
   return(1)
 }
