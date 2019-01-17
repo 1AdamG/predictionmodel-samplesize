@@ -2,16 +2,17 @@
 CREATE TABLE NTDB_adam.201X_summary 
 
 SELECT E.INC_KEY
-	#Event equals "Died within 30 days in ED" OR "Died within 30 days Discharged"
-	, CASE WHEN 
-		((E.EDDISP = 'Died' OR E.EDDISP = 'Died/Expired') AND E.EDDAYS <= 30)
-		OR (D.HOSPDISP = 'Expired' AND D.LOSDAYS <= 30)
+	#Event equals "Died within 30 days in ED" OR "Died within 30 days in Discharged"
+	,CASE WHEN 
+		((E.EDDISP = 'Died' OR E.EDDISP = 'Died/Expired') AND (E.EDDAYS <= 30 AND E.EDDAYS >= 0))
+		OR ((D.HOSPDISP = 'Expired' OR D.HOSPDISP = 'Deceased/Expired') AND (D.LOSDAYS <= 30 AND D.LOSDAYS >= 0))
 	THEN 1 ELSE 0 END Event
-    #Get Vitals (with VSTYPE=ED)
-    , VED.SBP, VED.PULSE, VED.RR, VED.GCSTOT
+	
+  #Get Vitals (with VSTYPE=ED)
+  ,VED.SBP, VED.PULSE, VED.RR, VED.GCSTOT
 FROM 
 	NTDB_adam.201X_ed E
 	LEFT JOIN NTDB_adam.201X_discharge D ON E.INC_KEY = D.INC_KEY
 	LEFT JOIN NTDB_adam.201X_vitals VED ON E.INC_KEY = VED.INC_KEY AND VED.VSTYPE = 'ED'
 #Exclude
-WHERE NOT (E.SIGNSOFLIFE ='Arrived with NO signs of life' OR VED.SBP < 0 OR VED.PULSE < 0 or VED.RR < 0 or VED.GCSTOT < 0)
+WHERE NOT (E.SIGNSOFLIFE ='Arrived with NO signs of life' OR VED.SBP <= 0 OR VED.PULSE <= 0 OR VED.RR <= 0 OR VED.GCSTOT <= 0)

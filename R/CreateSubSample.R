@@ -1,7 +1,6 @@
 ## The steps to create a subsample could be encapsulated as a function to avoid
 ## code duplication
 CreateSubSample <- function(dataset, number.of.events, number.of.nonevents) {
-    set.seed(89);
     #Bootstrap dataset
     datasetBootstrap <- dataset#[sample(nrow(dataset), nrow(dataset), replace = TRUE),]
     

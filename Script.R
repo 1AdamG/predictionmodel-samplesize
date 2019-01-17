@@ -102,6 +102,12 @@ RunStudy <- function(numberofupdatingevents,repetitionCount) {
             calibrationSlopeM <- cm$calibration.slope.M
         }
         
+        if (!is.numeric(comparisonResult) || is.nan(comparisonResult)) {
+          comparisonResult <- 99999
+          save(sample.dataset.A, sample.dataset.B, sample.dataset.C, file = paste(repetitionCount, numberofupdatingevents, developmentprevalence, updatingvalidationprevalence,".RData", sep = "-"))
+        }
+        
+        
         ## Store data
         StoreLoopData(executionID, repetitionCount, numberofupdatingevents, developmentprevalence, updatingvalidationprevalence, comparisonResult, calibrationSlopeUM, calibrationSlopeM,
                       test = FALSE)
