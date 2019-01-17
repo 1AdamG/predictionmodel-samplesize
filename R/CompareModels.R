@@ -34,10 +34,16 @@ CompareModels <- function(UMp, Mp, outcomes) {
     ## should be the same as the bias associated with a calibration slope of
     ## 2. The bias metric is a measure of the distance between the current
     ## calibration slope and an perfect calibration slope, on the log scale.
-    bias.estimates <- lapply(calibration.slopes, function(slope) abs(log(slope)))
-    ## Calculate difference in bias estimates. A negative value indicates that
-    ## the updated model is better than the crude model.
-    bias.diff <- with(bias.estimates, UMp - Mp)
+    ## Note that the bias metric is only defined for calibration slopes > 0, as
+    ## log is only defined for x > 0.
+    if (any(calibration.slopes < 0)) {
+        bias.diff <- 9999
+    } else {
+        bias.estimates <- lapply(calibration.slopes, function(slope) abs(log(slope)))
+        ## Calculate difference in bias estimates. A negative value indicates that
+        ## the updated model is better than the crude model.
+        bias.diff <- with(bias.estimates, UMp - Mp)
+    }
     ## Create return list
     return.list <- list(bias.diff = bias.diff,
                         calibration.slope.UM = calibration.slopes$UMp,
