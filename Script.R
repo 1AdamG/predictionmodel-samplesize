@@ -6,7 +6,7 @@ library(dplyr)
 ## Initialize
 set.seed(41738)
 ## setwd("/home/adam/Desktop/source/repos/predictionmodel-samplesize")
-source(".sshconfig.R")
+source("../.sshconfig.R")
 source("R/MySQLFunctions.R")
 source("R/CreateSubSample.R")
 source("R/CompareModels.R")
